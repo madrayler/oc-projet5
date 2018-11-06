@@ -3,7 +3,7 @@
  {% extends 'MBHSitederencontreBundle::layout.html.twig' %}
 
  {% block title %}
- 	Mon-profil - {{ parent() }} 	
+  Mon-profil - {{ parent() }}   
  {% endblock %}
 
  {% block menuleft %}
@@ -16,40 +16,43 @@
   {% endblock %}
 
  {% block menuRight %}
-  <div class="tooltip">
-    <div class="fas fa-bell text-white {% if hasNotification %} text-danger {% endif %}" data-toggle="tooltip" data-placement="bottom">
-     {# {% for message in message.body %}
-        <div class="row">
-          <div class="col-md-3">
-            {{message.sender}} (<small>{{message.createdAt | date('d/m/y')}}</small>)
-          </div>
-          <div class="col-md-9">
-            {message.body | raw}
-          </div>
-        </div>
-      {% endfor %}#}
-    </div>
-  </div>
+  
+   <div class="dropdown">
+     <i class="fas fa-bell text-white cursor-pointer {% if hasNotification %} text-danger {% endif %}" id="dropdownMenuButton" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+       {% for notification in notifications %}
+         <div class="d-flex bd-highlight">
+           <div class="p-2 flex-shrink-1 bd-highlight">
+             <a href="{{ path('mbh_sitederencontre_monprofil',{'id': notification.id}) }}">{{ notification.pseudo|title }}</a>
+           </div>
+           <div class="p-2 w-90 bd-highlight">
+             {{notification.body}}
+           </div>
+         </div>
+       {% endfor %}
+     </div>
+   </div>
+  
    <a class="nav-item text-white nav-link" href="{{ path('mbh_sitederencontre_logout') }}">Se déconnecter</a>
  {% endblock %}
 
  {% block body %}
- 	<div class="container">	
+  <div class="container"> 
     <div class="profil-photo">
- 			<h3>Photo de profil</h3>  
- 			<img src="{{ asset('uploads/images/' ~ members.profileImage) }}" alt="photo de profile {{ members.pseudo }}"
+      <h3>Photo de profil</h3>  
+      <img src="{{ asset('uploads/images/' ~ members.profileImage) }}" alt="photo de profile {{ members.pseudo }}"
           width="200" height="200" class="rounded-circle" />
       {% if members.id != user.id %}
       <button class="btn btn-outline-success  btn-chat" data-toggle="modal" data-target="#chat-{{ members.id }}">
         <i class="fas fa-envelope">Chats</i>
       </button>
-        
+        {% include "MBHSitederencontreBundle:Advert:chats.html.twig" with { 'member' : members} %}
       {% endif %}  
-    </div>	
+    </div>  
 
- 	  <div class="profil">
+    <div class="profil">
     <div class="row">
-        <div class="col-md-6">	  
+        <div class="col-md-6">    
          {% if members.image1 is not null %}
            <img src="{{ asset('uploads/images/' ~ members.image1) }}" alt="Image 1" width="100" height="150" class="rounded">
          {% endif %}
@@ -73,29 +76,10 @@
           <div><strong>Description</strong>:{{ members.description }}</div>
         </div>
     </div>
- 	{% if members.id == user.id %}
- 		<a href="{{ path('mbh_sitederencontre_profilcompleted',{'id': members.id}) }}" class="btn btn-primary">Modifier mon profil</a>
+  {% if members.id == user.id %}
+    <a href="{{ path('mbh_sitederencontre_profilcompleted',{'id': members.id}) }}" class="btn btn-primary">Modifier mon profil</a>
   {% endif %}
- 	</div>
   </div>
-  <div>
-           <div class="modal fade" id="chat-{{ members.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-             <div class="modal-dialog" role="document">
-               <div class="modal-content">
-                 <div class="modal-header">
-                   <h5 class="modal-title" id="exampleModalLabel">Envoyer un message</h5>
-                   <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-target="#chat-{{ members.id }}">
-                     <span aria-hidden="true" data-target="#chat-{{ members.id }}">&times;</span>
-                   </button>
-                 </div>
-                 <div class="modal-body">
-                   <form action="{{ path('mbh_sitederencontre_message_send') }}" method="post" enctype="multipart/form-data">
-                     <div id="#chat-{{ members.id }}--vue" class="chat-app" data-user-to="{{ members.id }}" data-user-from="{{ user.id }}"></div>
-                   </form>
-                 </div>
-                 <div class="modal-footer"></div>
-               </div>
-             </div>
-           </div>
+  </div>
          
  {% endblock %}

@@ -155,8 +155,8 @@ class AdvertController extends Controller
         }
 
         $notificationService = $this->get(NotificationService::class);
-        $hasNotification = $notificationService->hasNotifications($user);
-        return $this->render('MBHSitederencontreBundle:Advert:monprofil.html.twig', array('members' => $members, 'user'=> $user, 'hasNotification' => $hasNotification));
+        $notifications = $notificationService->hasNotifications($user);
+        return $this->render('MBHSitederencontreBundle:Advert:monprofil.html.twig', array('members' => $members, 'user'=> $user, 'hasNotification' => count($notifications) > 0, 'notifications' => $notifications, 'currentUser' => $user));
     }
 
     public function matchesAction(Request $request)
@@ -171,9 +171,9 @@ class AdvertController extends Controller
         $fileUploader = $this->get(FileUploader::class);
         $file = $fileUploader->upload($request->files->get('profile'));
         /** @var Members $member */
-        $member = $em->getRepository(Members::class)->findOneBy(array('id' => $id));
-        $fileUploader->removeImage($member->getProfileImage());
-        $member->setProfileImage($file);
+        $members = $em->getRepository(Members::class)->findOneBy(array('id' => $id));
+        $fileUploader->removeImage($members->getProfileImage());
+        $members->setProfileImage($file);
         $em->flush();
         return $this->redirectToRoute('mbh_sitederencontre_profilcompleted', ['id' => $id], 301);
     }
@@ -184,7 +184,7 @@ class AdvertController extends Controller
         $em = $this->getDoctrine()->getManager();
         $fileUploader = $this->get(FileUploader::class);
         /** @var Members $member */
-        $member = $em->getRepository(Members::class)->findOneBy(array('id' => $id));
+        $members = $em->getRepository(Members::class)->findOneBy(array('id' => $id));
         $files = $request->files->all();
         $methods = ['image-1' => ['getImage1', 'setImage1'],
             'image-2' => ['getImage2', 'setImage2'],
@@ -193,10 +193,10 @@ class AdvertController extends Controller
         foreach ($files as $key => $file) {
             if ($file) {
                 $fileName = $fileUploader->upload($file);
-                $fileUploader->removeImage($member->{$methods[$key][0]}());
-                $member->{$methods[$key][1]}($fileName);
+                $fileUploader->removeImage($members->{$methods[$key][0]}());
+                $members->{$methods[$key][1]}($fileName);
             } else {
-                $member->{$methods[$key][1]}(null);
+                $members->{$methods[$key][1]}(null);
             }
             $em->flush();
         }
@@ -271,8 +271,8 @@ class AdvertController extends Controller
         }
         $em = $this->getDoctrine()->getManager();
         $members = $em->getRepository(Members::class)->findAll();
-        $members = array_filter($members, function($member) {
-           return  $member->getId() !== $this->getUser()->getId();
+        $members = array_filter($members, function($members) {
+           return  $members->getId() !== $this->getUser()->getId();
         });
         return $this->render('MBHSitederencontreBundle:Advert:profiles.html.twig',
             array('members' => $members, 'currentUser' => $this->getUser()));

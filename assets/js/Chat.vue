@@ -5,7 +5,7 @@
                 class="list-unstyled mb-2"
                 v-for="message in messages"
             >
-                <div class="d-flex">
+                <div class="d-flex" :class="{'position-right': getSenderId(message.sender) == fromUser}">
                     <span class="font-weight-bold mr-3">{{getSenderInfo(message.sender)}}</span>
                     <div>{{message.body}}</div>
                 </div>
@@ -40,12 +40,15 @@
     beforeDestroy() {
       clearInterval(this.currentInterval)
     },
+    created(){
+      this.getMessages();
+    },
     methods: {
       getMessages() {
         this.clearInterval();
         if (this.fromUser && this.toUser) {
           this.currentInterval = setInterval(() => {
-            axios.get(`/projet5/symfony/web/app_dev.php/messages/${this.fromUser}/${this.toUser}`).then(d => {
+            axios.get(`/projet5/oc-projet5/web/app_dev.php/messages/${this.fromUser}/${this.toUser}`).then(d => {
               this.messages = d.data;
             })
           }, 2000)
@@ -53,7 +56,7 @@
       },
       sendMessage(e) {
         e.preventDefault()
-        axios.post(`/projet5/symfony/web/app_dev.php/message/send`, {body: this.messageToSend, from: this.fromUser, to: this.toUser}).then(d => {
+        axios.post(`/projet5/oc-projet5/web/app_dev.php/message/send`, {body: this.messageToSend, from: this.fromUser, to: this.toUser}).then(d => {
           this.messages = d.data
           this.messageToSend = ''
         })
@@ -62,6 +65,10 @@
         const _sender = JSON.parse(sender)
         return _sender.pseudo
       },
+      getSenderId(sender) {
+        const _sender = JSON.parse(sender)
+        return _sender.id
+      },
       clearInterval() {
         clearInterval(this.currentInterval)
       }
@@ -69,4 +76,14 @@
   }
 </script>
 
-<style></style>
+<style>
+    .position-right {
+        justify-content: flex-end;
+    }
+
+    .position-right span {
+        order: 1;
+        margin-left: 10px;
+    }
+
+</style>
